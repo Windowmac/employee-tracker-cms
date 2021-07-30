@@ -1,0 +1,23 @@
+{
+  "name": "employee-tracker-cms",
+  "version": "1.0.0",
+  "description": "An app that allows a user to interact with an employee database - able to add, edit, and view information.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Windowmac/employee-tracker-cms.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Windowmac/employee-tracker-cms/issues"
+  },
+  "homepage": "https://github.com/Windowmac/employee-tracker-cms#readme",
+  "dependencies": {
+    "mysql2": "^2.2.5"
+  }
+}
