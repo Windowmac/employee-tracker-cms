@@ -12,7 +12,7 @@ class InstructionList {
             if(err){
                 throw new Error(err);
             } else {
-                console.log(results);
+                console.table(results);
             }
         });
     } 
@@ -23,7 +23,7 @@ class InstructionList {
             if(err){
                 throw new Error(err);
             } else {
-                console.log(results);
+                console.table(results);
             }
         });
     } 
@@ -34,7 +34,7 @@ class InstructionList {
             if(err){
                 throw new Error(err);
             } else {
-                console.log(results);
+                console.table(results);
             }
         });
     } 
@@ -84,12 +84,61 @@ class InstructionList {
         }
     ]);
 
-    await query(querySql, [title, salary, department_id]).catch(err => {throw new Error(err)});
+    const { insertId } = await query(querySql, [title, salary, department_id]).catch(err => {throw new Error(err)});
+    console.log('successfully added role ID #' + insertId);
+    };
 
-    }
+    async addEmployee() {
+        const query = util.promisify(this.db.query).bind(this.db);
+        const querySql = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
 
-    addEmployee() {
+        const rolesArr = await query(`SELECT title FROM roles`).catch(err => {throw new Error(err)});
+        
+        const employeeSqlArr = await query(`SELECT employee_id, last_name, manager_id FROM employees JOIN roles ON employees.role_id = roles.role_id`).catch(err => {throw new Error(err)});
 
+        const idMaxArr = await query(`SELECT MAX(employee_id) AS idMax FROM employees`).catch(err => {throw new Error(err)});
+        const { idMax } = idMaxArr[0];
+
+        const managersArr = [];
+        const roleTitles = [];
+        employeeSqlArr.forEach(obj => {if(obj.employee_id === obj.manager_id) {
+                                            managersArr.push({'last name': obj.last_name,
+                                                              'id': obj.manager_id});
+                                        }});
+        rolesArr.forEach(obj => {roleTitles.push(obj.title);});
+        managersArr.push({'last name': 'self', 'id': (idMax + 1)});
+        const managerChoices = managersArr.map(manager => {return `${manager['last name']} - ID#${manager['id']}`});
+
+        const { first_name, last_name, role, manager } = await inquirer.prompt([
+        {
+            type: 'input',
+            message: 'What is the first name of the employee you want to add?',
+            name: 'first_name'
+        },
+        {
+            type: 'input',
+            message: 'What is the last name of the employee you want to add?',
+            name: 'last_name'
+        },
+        {
+            type: 'list',
+            message: 'What role does this employee have?',
+            name: 'role',
+            choices: roleTitles
+        },
+        {
+            type: 'list',
+            message: 'who is their manager?',
+            name: 'manager',
+            choices: managerChoices
+        }
+    ]);
+
+    const roleIdArr = await query('SELECT role_id FROM roles WHERE title = ?', role).catch(err => {throw new Error(err)});
+    const role_id = roleIdArr[0].role_id;
+    const manager_id = managersArr[managerChoices.indexOf(manager)].id;
+
+    await query(querySql, [first_name, last_name, role_id, manager_id]).catch(err => {throw new Error(err)});
     }
     updateEmployeeRole() {
 
